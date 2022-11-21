@@ -5,7 +5,8 @@ import {
   genericErrorHandler,
   notFoundErrorHandler,
   unauthorizedErrorHandler,
-} from "./errorHandeler";
+} from "./errorHandler";
+import usersRouter from "./api/users";
 
 const server = express();
 
@@ -16,6 +17,8 @@ server.use(unauthorizedErrorHandler);
 server.use(forbiddenErrorHandler);
 server.use(notFoundErrorHandler);
 server.use(genericErrorHandler);
+
+server.use("/users", usersRouter)
 
 
 export default server
