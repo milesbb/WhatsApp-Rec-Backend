@@ -8,8 +8,15 @@ import {
 } from "./errorHandler";
 import usersRouter from "./api/users";
 import chatsRouter from "./api/chats";
+import { Server as SocketIOServer } from "socket.io"
+import { createServer } from "http" 
 
 const server = express();
+
+const httpServer = createServer(server)
+const io = new SocketIOServer(httpServer) 
+
+
 
 server.use(cors());
 server.use(express.json());

@@ -1,11 +1,26 @@
 import express from "express";
 import UsersModel from "../users/model";
 import { JwtAuthenticationMiddleware, UserRequest } from "../../lib/jwtAuth";
+import  ChatsModel  from "./model";
 
 const chatsRouter = express.Router();
 
 // INITIAL CHATS REQUEST (check if chat exists)
-
+chatsRouter.get("/:receiverId", JwtAuthenticationMiddleware,async (req: UserRequest,res,next) => {
+  try {
+      const chat = await ChatsModel.find(
+        { members: { $all: [ req.user?._id , req.params.receiverId  ] } }
+      )
+      if(chat){
+        res.send({message: "this people have a chat between them"})
+      }else{
+        res.send({message: "this people do not have chat between them"})
+      }
+    
+  } catch (error) {
+    next(error)
+  }
+})
 
 
 // GET all chats I'm a part of
