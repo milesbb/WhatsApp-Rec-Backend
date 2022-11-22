@@ -1,15 +1,14 @@
 import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
-import UsersModel from '../model'
+import UsersModel from "../api/users/model";
 import { ObjectId } from "mongoose";
-import { UserDocument } from "../types";
+import { UserDocument } from "../api/users/types";
 
- export interface TokenPayload {
-    _id: ObjectId
-  }
+export interface TokenPayload {
+  _id: ObjectId;
+}
 
-
-export const createAccessToken = (payload: TokenPayload): Promise <string> =>
+export const createAccessToken = (payload: TokenPayload): Promise<string> =>
   new Promise((res, rej) =>
     jwt.sign(
       payload,
@@ -22,7 +21,7 @@ export const createAccessToken = (payload: TokenPayload): Promise <string> =>
     )
   );
 
-export const verifyAccessToken = (accessToken: string ): Promise <TokenPayload> =>
+export const verifyAccessToken = (accessToken: string): Promise<TokenPayload> =>
   new Promise((res, rej) => {
     jwt.verify(accessToken, process.env.JWT_SECRET!, (err, originalPayload) => {
       if (err) rej(err);
@@ -30,7 +29,9 @@ export const verifyAccessToken = (accessToken: string ): Promise <TokenPayload> 
     });
   });
 
-export const createAccessRefreshToken = (payload : TokenPayload): Promise<string> =>
+export const createAccessRefreshToken = (
+  payload: TokenPayload
+): Promise<string> =>
   new Promise((res, rej) =>
     jwt.sign(
       payload,
@@ -43,7 +44,9 @@ export const createAccessRefreshToken = (payload : TokenPayload): Promise<string
     )
   );
 
-export const verifyAccessRefreshToken = (accessToken: string) : Promise<TokenPayload>=>
+export const verifyAccessRefreshToken = (
+  accessToken: string
+): Promise<TokenPayload> =>
   new Promise((res, rej) => {
     jwt.verify(
       accessToken,
@@ -55,7 +58,7 @@ export const verifyAccessRefreshToken = (accessToken: string) : Promise<TokenPay
     );
   });
 
-export const createTokens = async (user : UserDocument) => {
+export const createTokens = async (user: UserDocument) => {
   const accessToken = await createAccessToken({
     _id: user._id,
   });
@@ -67,12 +70,16 @@ export const createTokens = async (user : UserDocument) => {
   return { accessToken, refreshToken };
 };
 
-export const verifyRefreshAndCreateNewTokens = async (currentRefreshToken: string) => {
+export const verifyRefreshAndCreateNewTokens = async (
+  currentRefreshToken: string
+) => {
   try {
-    const refreshTokenPayload = await verifyAccessRefreshToken(currentRefreshToken);
-    
+    const refreshTokenPayload = await verifyAccessRefreshToken(
+      currentRefreshToken
+    );
+
     const user = await UsersModel.findById(refreshTokenPayload._id);
-    
+
     if (!user)
       throw createHttpError(
         404,
@@ -85,7 +92,7 @@ export const verifyRefreshAndCreateNewTokens = async (currentRefreshToken: strin
       throw createHttpError(401, "Refresh token not valid!");
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw createHttpError(401, "Refresh token not valid!!!");
   }
 };

@@ -1,13 +1,17 @@
 import { RequestHandler, Request } from "express";
 import createHttpError from "http-errors";
-import { UserDocument } from "../types";
-import {TokenPayload, verifyAccessToken} from "./tools";
+import { UserDocument } from "../api/users/types";
+import { TokenPayload, verifyAccessToken } from "./tools";
 
-export interface UserRequest extends Request{
-    user?: Partial<UserDocument>
-  }
+export interface UserRequest extends Request {
+  user?: Partial<UserDocument>;
+}
 
-export const JwtAuthenticationMiddleware: RequestHandler  = async (req:UserRequest, res, next) => {
+export const JwtAuthenticationMiddleware: RequestHandler = async (
+  req: UserRequest,
+  res,
+  next
+) => {
   if (!req.headers.authorization) {
     next(
       createHttpError(
@@ -23,7 +27,6 @@ export const JwtAuthenticationMiddleware: RequestHandler  = async (req:UserReque
 
       req.user = {
         _id: payload._id,
-       
       };
       next();
     } catch (error) {

@@ -18,7 +18,6 @@ server.use(forbiddenErrorHandler);
 server.use(notFoundErrorHandler);
 server.use(genericErrorHandler);
 
-server.use("/users", usersRouter)
+server.use("/users", usersRouter);
 
-
-export default server
+export default server;
