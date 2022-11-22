@@ -9,8 +9,8 @@ const client = supertest(server);
 
 describe("Test User Endpoints", async () => {
   beforeAll(async () => {
-    if (process.env.MONGO_TEST_CONNECTION) {
-      await mongoose.connect(process.env.MONGO_TEST_CONNECTION);
+    if (process.env.MONGO_TEST_CONNECTION_URL) {
+      await mongoose.connect(process.env.MONGO_TEST_CONNECTION_URL);
     } else {
       throw new Error("Mongo URL missing!");
     }
