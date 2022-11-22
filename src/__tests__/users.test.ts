@@ -1,7 +1,7 @@
 import supertest from "supertest"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
-import server from "../src/server"
+import server from "../server"
 
 
 dotenv.config()

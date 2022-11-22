@@ -57,4 +57,4 @@ UsersSchema.static("checkCredentials", async function (email, plainPassword) {
   }
 });
 
-export default model<UserDocument, UsersModel>("user", UsersSchema);
+export default model<UserDocument, UsersModel>("User", UsersSchema);

@@ -7,6 +7,7 @@ import {
   unauthorizedErrorHandler,
 } from "./errorHandler";
 import usersRouter from "./api/users";
+import chatsRouter from "./api/chats";
 
 const server = express();
 
@@ -19,5 +20,6 @@ server.use(notFoundErrorHandler);
 server.use(genericErrorHandler);
 
 server.use("/users", usersRouter);
+server.use("/chats", chatsRouter);
 
 export default server;
