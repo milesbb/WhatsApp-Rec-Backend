@@ -1,10 +1,11 @@
-import { Model, Document } from "mongoose";
+import { Model, Document, ObjectId } from "mongoose";
 
 interface User {
   username: string;
   email: string;
   password: string;
   avatar: string;
+  chats: ObjectId;
   refreshToken: string;
 }
 

@@ -191,7 +191,7 @@ usersRouter.delete(
 
 // REFRESH USER SESSION/TOKENS
 
-usersRouter.post("/refreshTokens", async (req, res, next) => {
+usersRouter.post("/refreshTokens", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
     const { currentRefreshToken } = req.body;
     const newTokens = await verifyRefreshAndCreateNewTokens(
