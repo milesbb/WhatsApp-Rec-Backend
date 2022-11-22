@@ -158,7 +158,7 @@ usersRouter.post(
         const { accessToken, refreshToken } = await createTokens(user);
         res.send({ accessToken, refreshToken });
       } else {
-        next(createHttpError(401, `Credentials are not valid!`));
+        next(createHttpError(401, `Credentials are not valid.`));
       }
     } catch (error) {
       next(error);
