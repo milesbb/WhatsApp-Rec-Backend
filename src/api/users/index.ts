@@ -5,55 +5,41 @@ import UsersModel from "./model";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
+import { createTokens, verifyRefreshAndCreateNewTokens } from "../../lib/tools";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
     cloudinary,
   }),
   limits: { fileSize: 1024 * 1024 },
-}).single("image");
+}).single("userProfilePic");
 
 const usersRouter = express.Router();
 
-usersRouter.get(
-  "/:userName",
-  JwtAuthenticationMiddleware,
-  async (req, res, next) => {
-    try {
-      const user = await UsersModel.find({
-        userName: req.params.userName,
-      });
-      if (user) {
-        res.status(200).send(user);
-      } else {
-        next(
-          createHttpError(404, "there is no user with the userName provided")
-        );
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
-);
+// GET USERS (EITHER ALL OF THEM OR BY EMAIL / USERNAME IF QUERY PARAMS USED)
+usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
+  try {
+    let user = [];
 
-usersRouter.get(
-  "/:email",
-  JwtAuthenticationMiddleware,
-  async (req, res, next) => {
-    try {
-      const user = await UsersModel.find({
-        email: req.params.email,
+    if (req.query) {
+      user = await UsersModel.find({
+        $or: [{ username: req.query.username }, { email: req.query.email }],
       });
-      if (user) {
-        res.status(200).send(user);
-      } else {
-        next(createHttpError(404, "there is no user with the email provided"));
-      }
-    } catch (error) {
-      next(error);
+    } else {
+      user = await UsersModel.find();
     }
+
+    if (user) {
+      res.status(200).send(user);
+    } else {
+      next(createHttpError(404, "No users were found."));
+    }
+  } catch (error) {
+    next(error);
   }
-);
+});
+
+// GET ME
 
 usersRouter.get(
   "/me",
@@ -61,7 +47,10 @@ usersRouter.get(
   async (req: UserRequest, res, next) => {
     try {
       if (req.user) {
-        res.send(req.user);
+        const me = await UsersModel.findById(req.user._id);
+        if (me) {
+          res.send(me);
+        }
       } else {
         createHttpError(404, "user not found");
       }
@@ -71,44 +60,53 @@ usersRouter.get(
   }
 );
 
+// EDIT ME
+
 usersRouter.put(
   "/me",
   JwtAuthenticationMiddleware,
   async (req: UserRequest, res, next) => {
     try {
-      const updatedUser = await UsersModel.findByIdAndUpdate(
-        req.user!._id,
-        req.body,
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
-      res.send(updatedUser);
+      if (req.user) {
+        const updatedUser = await UsersModel.findByIdAndUpdate(
+          req.user._id,
+          req.body,
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+        res.send(updatedUser);
+      }
     } catch (error) {
       next(error);
     }
   }
 );
+
+// CHANGE MY AVATAR
 
 usersRouter.post(
   "/me/avatar",
   JwtAuthenticationMiddleware,
   cloudinaryUploader,
-  async (req, res, next) => {
+  async (req: UserRequest, res, next) => {
     try {
-      const foundUser = await UsersModel.findByIdAndUpdate(
-        req.params.userId,
-        { imageUrl: req.file!.path },
-        { new: true, runValidators: true }
-      );
-
-      res.status(201).send({ message: "User Pic Uploaded" });
+      if (req.user) {
+        const foundUser = await UsersModel.findByIdAndUpdate(
+          req.user._id,
+          { imageUrl: req.file!.path },
+          { new: true, runValidators: true }
+        );
+        res.status(201).send({ message: "User Pic Uploaded" });
+      }
     } catch (error) {
       next(error);
     }
   }
 );
+
+// GET SPECIFIC USER
 
 usersRouter.get(
   "/:userId",
@@ -127,8 +125,80 @@ usersRouter.get(
   }
 );
 
+// REGISTER USER
+
 usersRouter.post("/account", async (req, res, next) => {
   try {
+    const newUserPre = {
+      ...req.body,
+      avatar: `https://ui-avatars.com/api/?name=${req.body.username}`,
+    };
+
+    const newUser = new UsersModel(newUserPre);
+    const { _id } = await newUser.save();
+
+    res.status(201).send({ _id });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// LOGIN USER
+
+usersRouter.post(
+  "/session",
+  JwtAuthenticationMiddleware,
+  async (req, res, next) => {
+    try {
+      const { email, password } = req.body;
+
+      const user = await UsersModel.checkCredentials(email, password);
+
+      if (user) {
+        const { accessToken, refreshToken } = await createTokens(user);
+        res.send({ accessToken, refreshToken });
+      } else {
+        next(createHttpError(401, `Credentials are not ok!`));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// LOGOUT USER
+
+usersRouter.delete(
+  "/session",
+  JwtAuthenticationMiddleware,
+  async (req: UserRequest, res, next) => {
+    try {
+      if (req.user) {
+        const user = await UsersModel.updateOne(
+          { id: req.user._id },
+          { $unset: { refreshToken: 1 } }
+        );
+
+        if (user) {
+          res.status(200).send({ message: "User logged out" });
+        }
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// REFRESH USER SESSION/TOKENS
+
+usersRouter.post("/refreshTokens", async (req, res, next) => {
+  try {
+    const { currentRefreshToken } = req.body;
+    const newTokens = await verifyRefreshAndCreateNewTokens(
+      currentRefreshToken
+    )!;
+
+    res.send({ ...newTokens });
   } catch (error) {
     next(error);
   }

@@ -1,7 +1,7 @@
 import { Model, Document } from "mongoose";
 
 interface User {
-  userName: string;
+  username: string;
   email: string;
   password: string;
   avatar: string;

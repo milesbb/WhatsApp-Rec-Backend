@@ -6,7 +6,7 @@ const { Schema, model } = mongoose;
 
 const UsersSchema = new Schema(
   {
-    userName: { type: String, required: true },
+    username: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
     avatar: { type: String, required: true },
@@ -14,6 +14,7 @@ const UsersSchema = new Schema(
   },
   { timestamps: true }
 );
+
 UsersSchema.pre("save", async function (next) {
   const currentUser = this;
   if (currentUser.isModified("password")) {
