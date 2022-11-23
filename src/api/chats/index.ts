@@ -31,8 +31,11 @@ chatsRouter.get(
   JwtAuthenticationMiddleware,
   async (req: UserRequest, res, next) => {
     try {
+      
+      
       if (req.user) {
-        const user = await UsersModel.findById(req.user._id);
+        const user = await UsersModel.findById(req.user);
+        res.send({chats: user?.chats})
       }
     } catch (error) {
       next(error);

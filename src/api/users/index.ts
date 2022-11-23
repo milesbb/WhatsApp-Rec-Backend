@@ -95,7 +95,7 @@ usersRouter.post(
       if (req.user) {
         const foundUser = await UsersModel.findByIdAndUpdate(
           req.user._id,
-          { imageUrl: req.file!.path },
+          { avatar: req.file!.path },
           { new: true, runValidators: true }
         );
         res.status(201).send({ message: "User Pic Uploaded" });
@@ -147,13 +147,13 @@ usersRouter.post("/account", async (req, res, next) => {
 
 usersRouter.post(
   "/session",
-  JwtAuthenticationMiddleware,
   async (req, res, next) => {
     try {
       const { email, password } = req.body;
 
       const user = await UsersModel.checkCredentials(email, password);
-
+      
+      
       if (user) {
         const { accessToken, refreshToken } = await createTokens(user);
         res.send({ accessToken, refreshToken });
@@ -191,7 +191,7 @@ usersRouter.delete(
 
 // REFRESH USER SESSION/TOKENS
 
-usersRouter.post("/refreshTokens", JwtAuthenticationMiddleware, async (req, res, next) => {
+usersRouter.post("/refreshTokens",  async (req, res, next) => {
   try {
     const { currentRefreshToken } = req.body;
     const newTokens = await verifyRefreshAndCreateNewTokens(

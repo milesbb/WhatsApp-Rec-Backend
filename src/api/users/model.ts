@@ -42,11 +42,13 @@ UsersSchema.methods.toJSON = function () {
 };
 
 UsersSchema.static("checkCredentials", async function (email, plainPassword) {
-  const user = await this.findOne({ email });
+  const user: UserDocument = await this.findOne({ email });
 
+  console.log("User",user);
+  
   if (user) {
     const isMatch = await bcrypt.compare(plainPassword, user.password);
-
+    
     if (isMatch) {
       return user;
     } else {
