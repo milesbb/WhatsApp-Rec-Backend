@@ -19,18 +19,20 @@ const usersRouter = express.Router();
 // GET USERS (EITHER ALL OF THEM OR BY EMAIL / USERNAME IF QUERY PARAMS USED)
 usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
-    let user = [];
-
-    if (req.query) {
-      user = await UsersModel.find({
-        $or: [{ username: req.query.username }, { email: req.query.email }],
+    let users;
+    if (req.query.search) {
+      users = await UsersModel.find({
+        $or: [
+          { username: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ],
       });
     } else {
-      user = await UsersModel.find();
+      users = await UsersModel.find();
     }
-
-    if (user) {
-      res.status(200).send(user);
+    console.log(users);
+    if (users) {
+      res.status(200).send(users);
     } else {
       next(createHttpError(404, "No users were found."));
     }
@@ -145,26 +147,22 @@ usersRouter.post("/account", async (req, res, next) => {
 
 // LOGIN USER
 
-usersRouter.post(
-  "/session",
-  async (req, res, next) => {
-    try {
-      const { email, password } = req.body;
+usersRouter.post("/session", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-      const user = await UsersModel.checkCredentials(email, password);
-      
-      
-      if (user) {
-        const { accessToken, refreshToken } = await createTokens(user);
-        res.send({ accessToken, refreshToken });
-      } else {
-        next(createHttpError(401, `Credentials are not valid.`));
-      }
-    } catch (error) {
-      next(error);
+    const user = await UsersModel.checkCredentials(email, password);
+
+    if (user) {
+      const { accessToken, refreshToken } = await createTokens(user);
+      res.send({ accessToken, refreshToken, user });
+    } else {
+      next(createHttpError(401, `Credentials are not valid.`));
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 // LOGOUT USER
 
@@ -198,10 +196,11 @@ usersRouter.post("/refreshTokens",  async (req, res, next) => {
       currentRefreshToken
     )!;
 
-    res.send({ ...newTokens });
-  } catch (error) {
-    next(error);
+      res.send({ ...newTokens });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 export default usersRouter;
