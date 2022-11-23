@@ -2,6 +2,7 @@ import express from "express";
 import UsersModel from "../users/model";
 import { JwtAuthenticationMiddleware, UserRequest } from "../../lib/jwtAuth";
 import  ChatsModel  from "./model";
+import createHttpError from "http-errors";
 
 const chatsRouter = express.Router();
 
@@ -43,6 +44,9 @@ chatsRouter.get(
 
 chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
+    const newChat = new ChatsModel(req.body)
+    newChat.save()
+    res.send({id: newChat._id})
   } catch (error) {
     next(error);
   }
@@ -52,6 +56,12 @@ chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
 
 chatsRouter.get("/:id", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
+    const chatMessages = await ChatsModel.findById(req.params.id)
+    if(chatMessages){
+      res.send({messages: chatMessages.messages})
+    }else{
+      createHttpError(404, `chat with the id ${req.params.id} not found`)
+    }
   } catch (error) {
     next(error);
   }
