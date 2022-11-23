@@ -17,6 +17,9 @@ chatsRouter.get(
     try {
       if (req.user) {
         const user = await UsersModel.findById(req.user._id);
+        if (user) {
+            res.send(user.chats)
+        }
       }
     } catch (error) {
       next(error);

@@ -145,26 +145,22 @@ usersRouter.post("/account", async (req, res, next) => {
 
 // LOGIN USER
 
-usersRouter.post(
-  "/session",
-  JwtAuthenticationMiddleware,
-  async (req, res, next) => {
-    try {
-      const { email, password } = req.body;
+usersRouter.post("/session", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-      const user = await UsersModel.checkCredentials(email, password);
-
-      if (user) {
-        const { accessToken, refreshToken } = await createTokens(user);
-        res.send({ accessToken, refreshToken });
-      } else {
-        next(createHttpError(401, `Credentials are not valid.`));
-      }
-    } catch (error) {
-      next(error);
+    const user = await UsersModel.checkCredentials(email, password);
+    
+    if (user) {
+      const { accessToken, refreshToken } = await createTokens(user);
+      res.send({ accessToken, refreshToken, user });
+    } else {
+      next(createHttpError(401, `Credentials are not valid.`));
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 // LOGOUT USER
 
@@ -191,17 +187,21 @@ usersRouter.delete(
 
 // REFRESH USER SESSION/TOKENS
 
-usersRouter.post("/refreshTokens", JwtAuthenticationMiddleware, async (req, res, next) => {
-  try {
-    const { currentRefreshToken } = req.body;
-    const newTokens = await verifyRefreshAndCreateNewTokens(
-      currentRefreshToken
-    )!;
+usersRouter.post(
+  "/refreshTokens",
+  JwtAuthenticationMiddleware,
+  async (req, res, next) => {
+    try {
+      const { currentRefreshToken } = req.body;
+      const newTokens = await verifyRefreshAndCreateNewTokens(
+        currentRefreshToken
+      )!;
 
-    res.send({ ...newTokens });
-  } catch (error) {
-    next(error);
+      res.send({ ...newTokens });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 export default usersRouter;
