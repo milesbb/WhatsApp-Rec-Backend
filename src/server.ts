@@ -7,8 +7,17 @@ import {
   unauthorizedErrorHandler,
 } from "./errorHandler";
 import usersRouter from "./api/users";
+import chatsRouter from "./api/chats";
+import { Server as SocketIOServer } from "socket.io"
+import { createServer } from "http" 
+import { initialConnectionHandler } from "./socket";
 
 const server = express();
+
+const httpServer = createServer(server)
+const io = new SocketIOServer(httpServer) 
+
+io.on("connection", initialConnectionHandler)
 
 server.use(cors());
 server.use(express.json());
@@ -19,5 +28,6 @@ server.use(notFoundErrorHandler);
 server.use(genericErrorHandler);
 
 server.use("/users", usersRouter);
+server.use("/chats", chatsRouter);
 
 export default server;
