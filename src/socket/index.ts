@@ -79,13 +79,12 @@ export const initialConnectionHandler = (newUser: any) => {
       newUser.on("sendMessage", (message: Message) => {
         // Adds new message into temporary 'messages' array
         console.log(message);
-        console.log("hello");
         messages.push({
           sender: message.sender,
           content: message.content, // {text: TEXT-STRING, media: MEDIA-STRING}
           timestamp: message.timestamp,
         });
-        
+        console.log(messages)
         // Broadcasts message to rest of users in room
         newUser.to(roomId).broadcast.emit("newMessage", message);
       });
