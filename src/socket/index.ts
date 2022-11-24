@@ -47,7 +47,8 @@ export const initialConnectionHandler = (newUser: any) => {
         const chatIds = chats.map((chat) => {
           chat._id;
         });
-        if (chats) {
+        
+        if (chats.length !== 0) {
           // If there is an existing chat, sends back chat ID so frontend can get the specific messages of the chat using the ID and endpoint
           newUser.emit("existingChat", chatIds);
           console.log("Found a chat");
