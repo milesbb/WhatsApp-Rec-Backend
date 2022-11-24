@@ -22,8 +22,6 @@ export const initialConnectionHandler = (newUser: any) => {
   console.log("SocketId: ", newUser.id);
 
   newUser.emit("signedIn", OnlineUsers);
-  newUser.broadcast.emit("newConnection", OnlineUsers);
-
   // FRONTEND SENDS CONNECT AND WE ADD THEM TO 'ONLINE USERS ARRAY'
   // Expects payload of {username, _id}
   newUser.on("connect", (payload: UsernameWithId) => {
@@ -33,6 +31,8 @@ export const initialConnectionHandler = (newUser: any) => {
       userName: payload.username,
     });
   });
+  newUser.broadcast.emit("newConnection", OnlineUsers);
+
 
   // User sends potential participants to here with 'checkChats' event to chat if there is already a chat with them
   // Expects payload of array of User Id's []
@@ -66,10 +66,13 @@ export const initialConnectionHandler = (newUser: any) => {
 
     newUser.on("sendMessage", (message: Message) => {
       // Adds new message into temporary 'messages' array
+      console.log(message)
+      console.log('hello')
       messages.push({
         sender: message.sender,
         content: message.content, // {text: TEXT-STRING, media: MEDIA-STRING}
         timestamp: message.timestamp,
+
       });
 
       // Broadcasts message to rest of users in room

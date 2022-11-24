@@ -12,10 +12,10 @@ import { Server as SocketIOServer } from "socket.io";
 import { createServer } from "http";
 import { initialConnectionHandler } from "./socket";
 
-const server = express();
+export const server = express();
 
 const httpServer = createServer(server);
-const io = new SocketIOServer(httpServer);
+export const io = new SocketIOServer(httpServer);
 
 io.on("connection", initialConnectionHandler);
 
@@ -30,4 +30,4 @@ server.use(genericErrorHandler);
 server.use("/users", usersRouter);
 server.use("/chats", chatsRouter);
 
-export default server;
+export default httpServer

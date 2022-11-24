@@ -30,7 +30,7 @@ usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
     } else {
       users = await UsersModel.find();
     }
-    console.log(users);
+
     if (users) {
       res.status(200).send(users);
     } else {

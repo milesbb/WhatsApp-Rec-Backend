@@ -2,7 +2,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest  --runInBand --detectOpenHandles --watchAll",
-    "dev": "nodemon -r dotenv/config -e js ./src/index.ts",
+    "dev": "nodemon -r dotenv/config -e js ./build/index.js",
     "start": "node ./src/index.ts",
     "build": "tsc",
     "clear_jest": "jest --clearCache"
