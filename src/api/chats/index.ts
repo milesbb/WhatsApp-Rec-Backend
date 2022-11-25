@@ -49,9 +49,14 @@ chatsRouter.get(
 
 chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
-    const newChat = new ChatsModel(req.body)
+    const chatObject = {
+        members: [...req.body],
+        messages: []
+    }
+    
+    const newChat = new ChatsModel(chatObject)
     newChat.save()
-    res.send({id: newChat._id})
+    res.status(201).send(newChat)
   } catch (error) {
     next(error);
   }
@@ -61,9 +66,9 @@ chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
 
 chatsRouter.get("/:id", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
-    const chatMessages = await ChatsModel.findById(req.params.id)
-    if(chatMessages){
-      res.send({messages: chatMessages.messages})
+    const chat = await ChatsModel.findById(req.params.id)
+    if(chat){
+      res.send(chat)
     }else{
       createHttpError(404, `chat with the id ${req.params.id} not found`)
     }
