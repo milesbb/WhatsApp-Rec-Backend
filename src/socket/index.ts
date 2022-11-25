@@ -29,7 +29,7 @@ export const initialConnectionHandler = (newUser: any) => {
       socketId: newUser.id,
       userName: payload.username,
     });
-    console.log("Current online users", OnlineUsers);
+   
 
     newUser.emit("signedIn", OnlineUsers);
     newUser.broadcast.emit("newConnection", OnlineUsers); // Should push this new user to everyone elses' front ends
@@ -39,11 +39,11 @@ export const initialConnectionHandler = (newUser: any) => {
 
     newUser.on("checkChats", async (payload: string[]) => {
       try {
-        console.log(payload);
+        
         const objectIdArray = payload.map((stringId) => {
           return new mongoose.Types.ObjectId(stringId);
         });
-        console.log(objectIdArray);
+      
         const chat = await ChatsModel.findOne({ members: objectIdArray }); //INSIDE HERE NEEDS MONGOOSE QUERY TERMS TO FIND ALL CHATS THAT HAVE PARTICIPANTS EXACTLY EQUAL TO PAYLOAD PARTICIPANT ARRAY
         if (chat) {
           // If there is an existing chat, sends back chat ID so frontend can get the specific messages of the chat using the ID and endpoint
@@ -87,12 +87,14 @@ export const initialConnectionHandler = (newUser: any) => {
         // Broadcasts message to rest of users in room
         newUser.to(roomId).emit("newMessage", message);
       });
-
+      
       newUser.on("disconnect", () => {
+        console.log("disconnected", OnlineUsers)
        const newOnlineUsers =  OnlineUsers.filter((user) => {
           user.socketId !== newUser.id;
         });
-        newUser.emit("newConnection", newOnlineUsers)
+       
+        newUser.broadcast.emit("newConnection", newOnlineUsers)
         // Load specific created chat from DB into variable using the 'roomId' variable
         // push and spread 'messages' array full of recent messages onto the end of the 'messages' array in the DB chat object
         // Update using mongoose methods
