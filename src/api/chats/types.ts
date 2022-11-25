@@ -2,7 +2,7 @@ import { Model } from "mongoose";
 import { User } from "../users/types";
 
 export interface Message {
-  sender: User;
+  sender: string;
   content: {
     text?: string;
     media?: string;
@@ -11,7 +11,7 @@ export interface Message {
 }
 
 export interface Chat {
-  members: User[];
+  members: string[];
   messages: Message[];
 }
 
