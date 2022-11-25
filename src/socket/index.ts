@@ -44,7 +44,32 @@ export const initialConnectionHandler = (newUser: any) => {
           return new mongoose.Types.ObjectId(stringId);
         });
         console.log(objectIdArray);
-        const chat = await ChatsModel.findOne({ members: objectIdArray }); //INSIDE HERE NEEDS MONGOOSE QUERY TERMS TO FIND ALL CHATS THAT HAVE PARTICIPANTS EXACTLY EQUAL TO PAYLOAD PARTICIPANT ARRAY
+        // const chat = await ChatsModel.findOne({ members: { $in: [...objectIdArray] }});
+
+        const chats = await ChatsModel.find();
+
+        let chat = null
+
+        const checkIfValuesMatch = (arr1: any[], arr2: any[]) => {
+          let count = 0;
+          for (let i = 0; i < arr1.length; i++) {
+            for (let z = 0; z < arr2.length; z++) {
+              if (arr1[i] === arr2[z].toString()) {
+                count++;
+                break;
+              }
+            }
+          }
+          if (count !== arr1.length) return false;
+          return true
+        };
+
+        for (let v = 0; v < chats.length; v++) {
+          if (checkIfValuesMatch(payload, chats[v].members)) {
+            chat = chats[v]
+          }
+        }
+
         if (chat) {
           // If there is an existing chat, sends back chat ID so frontend can get the specific messages of the chat using the ID and endpoint
           newUser.emit("existingChat", chat._id);
@@ -89,10 +114,10 @@ export const initialConnectionHandler = (newUser: any) => {
       });
 
       newUser.on("disconnect", () => {
-       const newOnlineUsers =  OnlineUsers.filter((user) => {
+        const newOnlineUsers = OnlineUsers.filter((user) => {
           user.socketId !== newUser.id;
         });
-        newUser.emit("newConnection", newOnlineUsers)
+        newUser.emit("newConnection", newOnlineUsers);
         // Load specific created chat from DB into variable using the 'roomId' variable
         // push and spread 'messages' array full of recent messages onto the end of the 'messages' array in the DB chat object
         // Update using mongoose methods
