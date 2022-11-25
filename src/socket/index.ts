@@ -92,9 +92,9 @@ export const initialConnectionHandler = (newUser: any) => {
 
       newUser.on("disconnect", () => {
         OnlineUsers.filter((user) => {
-          user.id !== newUser.id;
+          user.socketId !== newUser.id;
         });
-
+        newUser.broadcast.emit("newConnection", OnlineUsers)
         // Load specific created chat from DB into variable using the 'roomId' variable
         // push and spread 'messages' array full of recent messages onto the end of the 'messages' array in the DB chat object
         // Update using mongoose methods
