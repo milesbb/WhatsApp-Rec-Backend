@@ -66,7 +66,7 @@ chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
 
 chatsRouter.get("/:id", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
-    const chat = await ChatsModel.findById(req.params.id)
+    const chat = await ChatsModel.findById(req.params.id).populate('members')
     console.log(chat)
     if(chat){
       res.send(chat)
