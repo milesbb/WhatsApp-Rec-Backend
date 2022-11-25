@@ -75,25 +75,25 @@ export const initialConnectionHandler = (newUser: any) => {
 
       newUser.on("sendMessage", async (message: Message) => {
         // Adds new message into temporary 'messages' array
-        console.log(message);
-        console.log("hello");
         // messages.push({
         //   sender: message.sender,
         //   content: message.content, // {text: TEXT-STRING, media: MEDIA-STRING}
         //   timestamp: message.timestamp,
         // });
         const chat = await ChatsModel.findByIdAndUpdate(roomId, {
-          $push: {messages: message}
-        })
+          $push: { messages: message },
+        });
 
         // Broadcasts message to rest of users in room
         newUser.to(roomId).emit("newMessage", message);
       });
 
       newUser.on("disconnect", () => {
-        OnlineUsers.filter((user) => {
+        const newOnlineUsers = OnlineUsers.filter((user) => {
           user.id !== newUser.id;
         });
+
+        newUser.emit("userDisconnected", newOnlineUsers);
 
         // Load specific created chat from DB into variable using the 'roomId' variable
         // push and spread 'messages' array full of recent messages onto the end of the 'messages' array in the DB chat object
